@@ -71,3 +71,4 @@ For a visual guide, watch the [video demo](https://github.com/user-attachments/a
 We'd love to hear your feedback and suggestions for further improvements. Feel free to contribute and join us in making backend development cleaner and faster!
 
 🎉 Happy coding!
+# event-management-backend
