@@ -1,30 +1,31 @@
-import type { User } from "@/api/user/userModel";
-
-export const users: User[] = [
-  {
-    id: 1,
-    name: "Alice",
-    email: "alice@example.com",
-    age: 42,
-    createdAt: new Date(),
-    updatedAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days later
-  },
-  {
-    id: 2,
-    name: "Robert",
-    email: "Robert@example.com",
-    age: 21,
-    createdAt: new Date(),
-    updatedAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days later
-  },
-];
+import { prisma } from "@/common/utils/prismaInstance";
+import { User, UserCreatePayload, UserUpdatePayload } from "./userModel";
 
 export class userRepository {
-  async findAllAsync(): Promise<User[]> {
-    return users;
+  async findAllAsync() {
+    return await prisma.user.findMany();
   }
 
-  async findByIdAsync(id: number): Promise<User | null> {
-    return users.find((user) => user.id === id) || null;
+  async findByIdAsync(id: string): Promise<User | null> {
+    return (await prisma.user.findUnique({ where: { id } })) || null;
+  }
+
+  async create(payload: UserCreatePayload) {
+    return await prisma.user.create({
+      data: payload,
+    });
+  }
+
+  async updateById(payload: UserUpdatePayload, id: string) {
+    return await prisma.user.update({
+      where: { id },
+      data: payload,
+    });
+  }
+
+  async deleteById(id: string) {
+    return await prisma.user.delete({
+      where: { id },
+    });
   }
 }
