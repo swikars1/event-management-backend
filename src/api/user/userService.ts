@@ -21,11 +21,7 @@ export class userService {
     try {
       const users = await this.userRepository.findAllAsync();
       if (!users || users.length === 0) {
-        return ServiceResponse.failure(
-          "No Users found",
-          null,
-          StatusCodes.NOT_FOUND
-        );
+        return ServiceResponse.failure("No Users found", null, StatusCodes.OK);
       }
       return ServiceResponse.success<User[]>("Users found", users);
     } catch (ex) {
@@ -44,11 +40,7 @@ export class userService {
     try {
       const user = await this.userRepository.findByIdAsync(id);
       if (!user) {
-        return ServiceResponse.failure(
-          "User not found",
-          null,
-          StatusCodes.NOT_FOUND
-        );
+        return ServiceResponse.failure("User not found", null, StatusCodes.OK);
       }
       return ServiceResponse.success<User>("User found", user);
     } catch (ex) {

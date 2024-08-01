@@ -28,7 +28,6 @@ export type UserCreatePayload = {
 };
 
 export type UserUpdatePayload = {
-  id: string;
   email?: string;
   name?: string;
 };

@@ -69,7 +69,7 @@ model Ticket {
 model Theme {
   id          String   @id @default(uuid())
   name        String
-  description String
+  description String?
   events      Event[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -78,7 +78,7 @@ model Theme {
 model Decor {
   id          String   @id @default(uuid())
   name        String
-  description String
+  description String?
   events      Event[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -87,8 +87,8 @@ model Decor {
 model Catering {
   id          String   @id @default(uuid())
   name        String
-  description String
-  menu        String
+  description String?
+  menu        String?
   events      Event[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -97,8 +97,8 @@ model Catering {
 model Entertainment {
   id          String   @id @default(uuid())
   name        String
-  description String
-  type        String
+  description String?
+  type        String?
   events      Event[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -107,7 +107,7 @@ model Entertainment {
 model Accommodation {
   id          String   @id @default(uuid())
   name        String
-  description String
+  description String?
   address     String
   events      Event[]
   createdAt   DateTime @default(now())
