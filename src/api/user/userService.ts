@@ -3,11 +3,15 @@ import { StatusCodes } from "http-status-codes";
 import type {
   User,
   UserCreatePayload,
+  UserLoginPayload,
   UserUpdatePayload,
 } from "@/api/user/userModel";
 import { userRepository } from "@/api/user/userRepository";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { logger } from "@/server";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { env } from "@/common/utils/envConfig";
 
 export class userService {
   private userRepository: userRepository;
@@ -56,11 +60,69 @@ export class userService {
     }
   }
 
-  async create(
+  async login(
+    payload: UserLoginPayload
+  ): Promise<ServiceResponse<User | null>> {
+    try {
+      const user = await this.userRepository.findByEmail(payload.email);
+      if (!user) {
+        return ServiceResponse.failure(
+          "User not found",
+          null,
+          StatusCodes.UNAUTHORIZED
+        );
+      }
+      const isPasswordSame = await bcrypt.compare(
+        payload.password,
+        user.password
+      );
+
+      if (!isPasswordSame) {
+        return ServiceResponse.failure(
+          "Invalid credentials",
+          null,
+          StatusCodes.UNAUTHORIZED
+        );
+      }
+
+      const bearerToken = jwt.sign(
+        { id: user.id, email: user.email },
+        env.JWT_SECRET,
+        {
+          expiresIn: "180d",
+        }
+      );
+      return ServiceResponse.success<User & { bearerToken: string }>(
+        "User Logged In",
+        {
+          ...user,
+          bearerToken,
+        }
+      );
+    } catch (ex) {
+      const errorMessage = `Error Logging in user: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while logging in user.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async signUp(
     payload: UserCreatePayload
   ): Promise<ServiceResponse<User | null>> {
     try {
-      const user = await this.userRepository.create(payload);
+      // hash and salt password using bcrypt
+      const hashedPassword = await bcrypt.hash(payload.password, 10);
+
+      const user = await this.userRepository.create({
+        name: payload.name,
+        email: payload.email,
+        password: hashedPassword,
+        role: "USER",
+      });
       return ServiceResponse.success<User>("User created", user);
     } catch (ex) {
       const errorMessage = `Error creating user: ${(ex as Error).message}`;

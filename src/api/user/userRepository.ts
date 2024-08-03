@@ -10,6 +10,10 @@ export class userRepository {
     return (await prisma.user.findUnique({ where: { id } })) || null;
   }
 
+  async findByEmail(email: string): Promise<User | null> {
+    return (await prisma.user.findUnique({ where: { email } })) || null;
+  }
+
   async create(payload: UserCreatePayload) {
     return await prisma.user.create({
       data: payload,

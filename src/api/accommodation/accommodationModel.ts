@@ -16,8 +16,8 @@ export type Accommodation = z.infer<typeof AccommodationSchema>;
 export type AccommodationCreatePayload = {
   id?: string;
   name: string;
-  description: string;
-  menu?: string;
+  description?: string;
+  address: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -25,7 +25,7 @@ export type AccommodationCreatePayload = {
 export type AccommodationUpdatePayload = {
   name?: string;
   description?: string;
-  menu?: string;
+  address?: string;
 };
 
 // Input Validation for 'GET accommodations/:id' endpoint

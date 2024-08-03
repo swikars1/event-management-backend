@@ -6,16 +6,18 @@ import {
   handleServiceResponse,
   validateRequest,
 } from "@/common/utils/httpHandlers";
+import { authenticate } from "@/common/middleware/auth";
 
 export const userRouter: Router = express.Router();
 
-userRouter.get("/", async (_req: Request, res: Response) => {
+userRouter.get("/", authenticate, async (_req: Request, res: Response) => {
   const serviceResponse = await userServiceInstance.findAll();
   return handleServiceResponse(serviceResponse, res);
 });
 
 userRouter.get(
   "/:id",
+  authenticate,
   validateRequest(GetUserSchema),
   async (req: Request, res: Response) => {
     const id = req.params.id;
@@ -25,11 +27,11 @@ userRouter.get(
 );
 
 userRouter.post("/", async (req: Request, res: Response) => {
-  const serviceResponse = await userServiceInstance.create(req.body);
+  const serviceResponse = await userServiceInstance.signUp(req.body);
   return handleServiceResponse(serviceResponse, res);
 });
 
-userRouter.put("/:id", async (req: Request, res: Response) => {
+userRouter.put("/:id", authenticate, async (req: Request, res: Response) => {
   const serviceResponse = await userServiceInstance.updateById(
     req.body,
     req.params.id
@@ -37,7 +39,13 @@ userRouter.put("/:id", async (req: Request, res: Response) => {
   return handleServiceResponse(serviceResponse, res);
 });
 
-userRouter.delete("/:id", async (req: Request, res: Response) => {
+userRouter.delete("/:id", authenticate, async (req: Request, res: Response) => {
   const serviceResponse = await userServiceInstance.deleteById(req.params.id);
+  return handleServiceResponse(serviceResponse, res);
+});
+
+userRouter.post("/login", async (req: Request, res: Response) => {
+  console.log(req.body);
+  const serviceResponse = await userServiceInstance.login(req.body);
   return handleServiceResponse(serviceResponse, res);
 });

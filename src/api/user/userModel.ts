@@ -18,13 +18,15 @@ export const UserSchema = z.object({
 export type User = z.infer<typeof UserSchema>;
 
 export type UserCreatePayload = {
-  id?: string;
   email: string;
   name: string;
   password: string;
-  role?: "USER" | "ADMIN";
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
+  role: "USER" | "ADMIN";
+};
+
+export type UserLoginPayload = {
+  email: string;
+  password: string;
 };
 
 export type UserUpdatePayload = {

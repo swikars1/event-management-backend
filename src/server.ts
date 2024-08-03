@@ -11,6 +11,12 @@ import requestLogger from "@/common/middleware/requestLogger";
 import { env } from "@/common/utils/envConfig";
 import bodyParser from "body-parser";
 import { cateringRouter } from "./api/catering/cateringRouter";
+import { decorRouter } from "./api/decor/decorRouter";
+import { eventRouter } from "./api/event/eventRouter";
+import { ticketRouter } from "./api/ticket/ticketRouter";
+import { themeRouter } from "./api/theme/themeRouter";
+import { entertainmentRouter } from "./api/entertainment/entertainmentRouter";
+import { accommodationRouter } from "./api/accommodation/accommodationRouter";
 
 const logger = pino({ name: "server start" });
 const app: Express = express();
@@ -24,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Middlewares
-app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+app.use(cors({ origin: "*" }));
 app.use(helmet());
 app.use(rateLimiter);
 
@@ -35,6 +41,12 @@ app.use(requestLogger);
 app.use("/health-check", healthCheckRouter);
 app.use("/users", userRouter);
 app.use("/caterings", cateringRouter);
+app.use("/decors", decorRouter);
+app.use("/events", eventRouter);
+app.use("/tickets", ticketRouter);
+app.use("/themes", themeRouter);
+app.use("/entertainments", entertainmentRouter);
+app.use("/accommodations", accommodationRouter);
 
 // Swagger UI
 
