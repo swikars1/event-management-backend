@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: 'eventdb'
-      MYSQL_USER: 'root'
+      MYSQL_USER: 'eventuser'
       MYSQL_PASSWORD: 'password'
       MYSQL_ROOT_PASSWORD: 'password'
     ports:
