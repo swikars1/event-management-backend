@@ -10,14 +10,13 @@ import { authenticate } from "@/common/middleware/auth";
 
 export const userRouter: Router = express.Router();
 
-userRouter.get("/", authenticate, async (_req: Request, res: Response) => {
+userRouter.get("/", async (_req: Request, res: Response) => {
   const serviceResponse = await userServiceInstance.findAll();
   return handleServiceResponse(serviceResponse, res);
 });
 
 userRouter.get(
   "/:id",
-  authenticate,
   validateRequest(GetUserSchema),
   async (req: Request, res: Response) => {
     const id = req.params.id;
@@ -31,7 +30,7 @@ userRouter.post("/", async (req: Request, res: Response) => {
   return handleServiceResponse(serviceResponse, res);
 });
 
-userRouter.put("/:id", authenticate, async (req: Request, res: Response) => {
+userRouter.put("/:id", async (req: Request, res: Response) => {
   const serviceResponse = await userServiceInstance.updateById(
     req.body,
     req.params.id
@@ -39,7 +38,7 @@ userRouter.put("/:id", authenticate, async (req: Request, res: Response) => {
   return handleServiceResponse(serviceResponse, res);
 });
 
-userRouter.delete("/:id", authenticate, async (req: Request, res: Response) => {
+userRouter.delete("/:id", async (req: Request, res: Response) => {
   const serviceResponse = await userServiceInstance.deleteById(req.params.id);
   return handleServiceResponse(serviceResponse, res);
 });
