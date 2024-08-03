@@ -32,7 +32,7 @@ app.use(bodyParser.json());
 // Middlewares
 app.use(cors({ origin: "*" }));
 app.use(helmet());
-app.use(rateLimiter);
+// app.use(rateLimiter);
 
 // Request logging
 app.use(requestLogger);
