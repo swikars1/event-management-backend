@@ -35,7 +35,6 @@ export type EventCreatePayload = {
   startDate: Date | string;
   endDate: Date | string;
   location: string;
-  organizerId: string;
   themeId?: string;
   decorId?: string;
   cateringId?: string;

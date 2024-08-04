@@ -1,5 +1,6 @@
 import { prisma } from "@/common/utils/prismaInstance";
 import { Event, EventCreatePayload, EventUpdatePayload } from "./eventModel";
+import { User } from "@prisma/client";
 
 export class eventRepository {
   async findAllAsync() {
@@ -11,8 +12,9 @@ export class eventRepository {
   }
 
   async create(payload: EventCreatePayload) {
+    const user = (await prisma.user.findFirst()) as User;
     return await prisma.event.create({
-      data: payload,
+      data: { ...payload, organizerId: user.id },
     });
   }
 

@@ -63,7 +63,7 @@ export class eventService {
   ): Promise<ServiceResponse<Event | null>> {
     try {
       const event = await this.eventRepository.create(payload);
-      return ServiceResponse.success<Event>("Event created", event);
+      return ServiceResponse.success("Event created", null);
     } catch (ex) {
       const errorMessage = `Error creating event: ${(ex as Error).message}`;
       logger.error(errorMessage);
