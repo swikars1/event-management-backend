@@ -6,17 +6,18 @@ import {
   handleServiceResponse,
   validateRequest,
 } from "@/common/utils/httpHandlers";
-import { authenticate } from "@/common/middleware/auth";
+import { authenticate, authenticateAdmin } from "@/common/middleware/auth";
 
 export const userRouter: Router = express.Router();
 
-userRouter.get("/", async (_req: Request, res: Response) => {
+userRouter.get("/", authenticateAdmin, async (_req: Request, res: Response) => {
   const serviceResponse = await userServiceInstance.findAll();
   return handleServiceResponse(serviceResponse, res);
 });
 
 userRouter.get(
   "/:id",
+  authenticateAdmin,
   validateRequest(GetUserSchema),
   async (req: Request, res: Response) => {
     const id = req.params.id;
@@ -25,26 +26,43 @@ userRouter.get(
   }
 );
 
-userRouter.post("/", async (req: Request, res: Response) => {
+userRouter.post("/", authenticateAdmin, async (req: Request, res: Response) => {
   const serviceResponse = await userServiceInstance.signUp(req.body);
   return handleServiceResponse(serviceResponse, res);
 });
 
-userRouter.put("/:id", async (req: Request, res: Response) => {
-  const serviceResponse = await userServiceInstance.updateById(
-    req.body,
-    req.params.id
-  );
-  return handleServiceResponse(serviceResponse, res);
-});
+userRouter.put(
+  "/:id",
+  authenticateAdmin,
+  async (req: Request, res: Response) => {
+    const serviceResponse = await userServiceInstance.updateById(
+      req.body,
+      req.params.id
+    );
+    return handleServiceResponse(serviceResponse, res);
+  }
+);
 
-userRouter.delete("/:id", async (req: Request, res: Response) => {
-  const serviceResponse = await userServiceInstance.deleteById(req.params.id);
-  return handleServiceResponse(serviceResponse, res);
-});
+userRouter.delete(
+  "/:id",
+  authenticateAdmin,
+  async (req: Request, res: Response) => {
+    const serviceResponse = await userServiceInstance.deleteById(req.params.id);
+    return handleServiceResponse(serviceResponse, res);
+  }
+);
 
 userRouter.post("/login", async (req: Request, res: Response) => {
-  console.log(req.body);
   const serviceResponse = await userServiceInstance.login(req.body);
+  return handleServiceResponse(serviceResponse, res);
+});
+
+userRouter.post("/register", async (req: Request, res: Response) => {
+  const serviceResponse = await userServiceInstance.signUp(req.body);
+  return handleServiceResponse(serviceResponse, res);
+});
+
+userRouter.post("/admin-login", async (req: Request, res: Response) => {
+  const serviceResponse = await userServiceInstance.adminLogin(req.body);
   return handleServiceResponse(serviceResponse, res);
 });

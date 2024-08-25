@@ -5,7 +5,7 @@ import type {
   EventCreatePayload,
   EventUpdatePayload,
 } from "@/api/event/eventModel";
-import { eventRepository } from "@/api/event/eventRepository";
+import { eventRepository, UserBooking } from "@/api/event/eventRepository";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { logger } from "@/server";
 
@@ -37,6 +37,41 @@ export class eventService {
     }
   }
 
+  // Retrieves all booking of current user from the database
+
+  async findAllUserBookings(
+    userId: string | undefined
+  ): Promise<ServiceResponse<UserBooking[] | null>> {
+    try {
+      if (!userId) {
+        return ServiceResponse.failure(
+          "An error occurred while retrieving bookings.",
+          null,
+          StatusCodes.FORBIDDEN
+        );
+      }
+      const bookings = await this.eventRepository.findAllBookings(userId);
+      if (!bookings || bookings.length === 0) {
+        return ServiceResponse.failure(
+          "No Bookings found",
+          null,
+          StatusCodes.OK
+        );
+      }
+      return ServiceResponse.success("Bookings found", bookings);
+    } catch (ex) {
+      const errorMessage = `Error finding all bookings: $${
+        (ex as Error).message
+      }`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while retrieving bookings.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   // Retrieves a single event by their ID
   async findById(id: string): Promise<ServiceResponse<Event | null>> {
     try {
@@ -62,6 +97,13 @@ export class eventService {
     payload: EventCreatePayload
   ): Promise<ServiceResponse<Event | null>> {
     try {
+      if (!payload.organizerId) {
+        return ServiceResponse.failure(
+          "An error occurred while creating event.",
+          null,
+          StatusCodes.FORBIDDEN
+        );
+      }
       const event = await this.eventRepository.create(payload);
       return ServiceResponse.success("Event created", null);
     } catch (ex) {
@@ -104,6 +146,39 @@ export class eventService {
   async deleteById(id: string): Promise<ServiceResponse<Event | null>> {
     try {
       const event = await this.eventRepository.findByIdAsync(id);
+      if (!event) {
+        return ServiceResponse.failure(
+          "Event not found",
+          null,
+          StatusCodes.NOT_FOUND
+        );
+      }
+      await this.eventRepository.deleteById(id);
+      return ServiceResponse.success<Event>("Event deleted", event);
+    } catch (ex) {
+      const errorMessage = `Error deleting event: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while deleting event.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async deleteBookingById(
+    id: string,
+    userId: string | undefined
+  ): Promise<ServiceResponse<Event | null>> {
+    try {
+      if (!userId) {
+        return ServiceResponse.failure(
+          "An error occurred while deleting booking.",
+          null,
+          StatusCodes.FORBIDDEN
+        );
+      }
+      const event = await this.eventRepository.findByUserIdAsync(id, userId);
       if (!event) {
         return ServiceResponse.failure(
           "Event not found",

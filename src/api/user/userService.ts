@@ -60,6 +60,31 @@ export class userService {
     }
   }
 
+  async signUp(
+    payload: UserCreatePayload
+  ): Promise<ServiceResponse<User | null>> {
+    try {
+      // hash and salt password using bcrypt
+      const hashedPassword = await bcrypt.hash(payload.password, 10);
+
+      const user = await this.userRepository.create({
+        name: payload.name,
+        email: payload.email,
+        password: hashedPassword,
+        role: "USER",
+      });
+      return ServiceResponse.success<User>("User created", user);
+    } catch (ex) {
+      const errorMessage = `Error creating user: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while creating user.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   async login(
     payload: UserLoginPayload
   ): Promise<ServiceResponse<User | null>> {
@@ -86,7 +111,7 @@ export class userService {
       }
 
       const bearerToken = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, role: "USER" },
         env.JWT_SECRET,
         {
           expiresIn: "180d",
@@ -110,25 +135,58 @@ export class userService {
     }
   }
 
-  async signUp(
-    payload: UserCreatePayload
+  async adminLogin(
+    payload: UserLoginPayload
   ): Promise<ServiceResponse<User | null>> {
     try {
-      // hash and salt password using bcrypt
-      const hashedPassword = await bcrypt.hash(payload.password, 10);
+      const user = await this.userRepository.findByEmail(payload.email);
+      if (!user) {
+        return ServiceResponse.failure(
+          "Admin not found",
+          null,
+          StatusCodes.UNAUTHORIZED
+        );
+      }
+      if (user.role !== "ADMIN") {
+        return ServiceResponse.failure(
+          "Unauthorized",
+          null,
+          StatusCodes.UNAUTHORIZED
+        );
+      }
 
-      const user = await this.userRepository.create({
-        name: payload.name,
-        email: payload.email,
-        password: hashedPassword,
-        role: "USER",
-      });
-      return ServiceResponse.success<User>("User created", user);
+      const isPasswordSame = await bcrypt.compare(
+        payload.password,
+        user.password
+      );
+
+      if (!isPasswordSame) {
+        return ServiceResponse.failure(
+          "Invalid credentials",
+          null,
+          StatusCodes.UNAUTHORIZED
+        );
+      }
+
+      const bearerToken = jwt.sign(
+        { id: user.id, email: user.email, role: "ADMIN" },
+        env.JWT_SECRET,
+        {
+          expiresIn: "180d",
+        }
+      );
+      return ServiceResponse.success<User & { bearerToken: string }>(
+        "Admin Logged In",
+        {
+          ...user,
+          bearerToken,
+        }
+      );
     } catch (ex) {
-      const errorMessage = `Error creating user: ${(ex as Error).message}`;
+      const errorMessage = `Error Logging in admin: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
-        "An error occurred while creating user.",
+        "An error occurred while logging in admin.",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );

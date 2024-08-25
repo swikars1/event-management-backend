@@ -22,12 +22,21 @@ const EventSchema = z.object({
   entertainmentId: z.string().optional().nullable(),
   accommodation: z.string().optional().nullable(),
   accommodationId: z.string().optional().nullable(),
-  status: z.enum(["DRAFT", "PENDING", "APPROVED", "REJECTED", "CANCELLED"]),
+  status: z.enum(["DRAFT", "SCHEDULED", "CANCELLED", "COMPLETED"]),
   createdAt: z.date().default(new Date()),
   updatedAt: z.date().optional(),
 });
 
-export type Event = z.infer<typeof EventSchema>;
+export type Event = Omit<
+  z.infer<typeof EventSchema>,
+  | "organizer"
+  | "theme"
+  | "decor"
+  | "catering"
+  | "entertainment"
+  | "accommodation"
+  | "tickets"
+>;
 
 export type EventCreatePayload = {
   title: string;
@@ -35,6 +44,7 @@ export type EventCreatePayload = {
   startDate: Date | string;
   endDate: Date | string;
   location: string;
+  organizerId: string;
   themeId?: string;
   decorId?: string;
   cateringId?: string;
