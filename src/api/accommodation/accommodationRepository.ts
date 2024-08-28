@@ -7,7 +7,11 @@ import {
 
 export class accommodationRepository {
   async findAllAsync() {
-    return await prisma.accommodation.findMany();
+    return await prisma.accommodation.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
   }
 
   async findByIdAsync(id: string): Promise<Accommodation | null> {
@@ -15,6 +19,7 @@ export class accommodationRepository {
   }
 
   async create(payload: AccommodationCreatePayload) {
+    console.log({ payload });
     return await prisma.accommodation.create({
       data: payload,
     });
