@@ -6,7 +6,7 @@ import {
   handleServiceResponse,
   validateRequest,
 } from "@/common/utils/httpHandlers";
-import { authenticate, authenticateAdmin } from "@/common/middleware/auth";
+import { authenticateAdmin } from "@/common/middleware/auth";
 
 export const userRouter: Router = express.Router();
 

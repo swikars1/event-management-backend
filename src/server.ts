@@ -17,9 +17,15 @@ import { ticketRouter } from "./api/ticket/ticketRouter";
 import { themeRouter } from "./api/theme/themeRouter";
 import { entertainmentRouter } from "./api/entertainment/entertainmentRouter";
 import { accommodationRouter } from "./api/accommodation/accommodationRouter";
+import { createServer } from "http";
+import { initSockets } from "./common/utils/socket";
 
 const logger = pino({ name: "server start" });
 const app: Express = express();
+
+const httpServer = createServer(app);
+
+initSockets(httpServer);
 
 // Set the application to trust the reverse proxy
 app.set("trust proxy", true);
@@ -53,4 +59,4 @@ app.use("/accommodations", accommodationRouter);
 // Error handlers
 app.use(errorHandler());
 
-export { app, logger };
+export { httpServer, logger };
