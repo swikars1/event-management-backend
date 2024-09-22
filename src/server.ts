@@ -19,6 +19,7 @@ import { entertainmentRouter } from "./api/entertainment/entertainmentRouter";
 import { accommodationRouter } from "./api/accommodation/accommodationRouter";
 import { createServer } from "http";
 import { initSockets } from "./common/utils/socket";
+import { chatRouter } from "./api/chat/chatRouter";
 
 const logger = pino({ name: "server start" });
 const app: Express = express();
@@ -53,6 +54,7 @@ app.use("/tickets", ticketRouter);
 app.use("/themes", themeRouter);
 app.use("/entertainments", entertainmentRouter);
 app.use("/accommodations", accommodationRouter);
+app.use("/chat", chatRouter);
 
 // Swagger UI
 

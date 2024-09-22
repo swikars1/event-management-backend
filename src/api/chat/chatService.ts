@@ -5,9 +5,14 @@ import type {
   ChatCreatePayload,
   ChatUpdatePayload,
 } from "@/api/chat/chatModel";
-import { chatRepository } from "@/api/chat/chatRepository";
+import {
+  ChatHistoryMessage,
+  chatRepository,
+  UserChat,
+} from "@/api/chat/chatRepository";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { logger } from "@/server";
+import { Message } from "@prisma/client";
 
 export class chatService {
   private chatRepository: chatRepository;
@@ -116,6 +121,141 @@ export class chatService {
       logger.error(errorMessage);
       return ServiceResponse.failure(
         "An error occurred while deleting chat.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async getUserChatsForAdmin(): Promise<ServiceResponse<UserChat[] | null>> {
+    try {
+      const userChats = await this.chatRepository.getUserChatsForAdmin();
+      if (!userChats || userChats.length === 0) {
+        return ServiceResponse.failure(
+          "No user chats found",
+          null,
+          StatusCodes.OK
+        );
+      }
+      return ServiceResponse.success<UserChat[]>("User chats found", userChats);
+    } catch (ex) {
+      const errorMessage = `Error fetching user chats for admin: ${
+        (ex as Error).message
+      }`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while retrieving user chats.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async getChatHistory(
+    senderId: string,
+    receiverId: string
+  ): Promise<ServiceResponse<ChatHistoryMessage[] | null>> {
+    try {
+      const chatHistory = await this.chatRepository.getChatHistory(
+        senderId,
+        receiverId
+      );
+      if (!chatHistory || chatHistory.length === 0) {
+        return ServiceResponse.failure(
+          "No chat history found",
+          null,
+          StatusCodes.OK
+        );
+      }
+      return ServiceResponse.success<ChatHistoryMessage[]>(
+        "Chat history found",
+        chatHistory
+      );
+    } catch (ex) {
+      const errorMessage = `Error fetching chat history for chat ${senderId}, ${receiverId}
+      }: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while retrieving chat history.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async createNewChat(
+    senderId: string,
+    recipientId: string
+  ): Promise<ServiceResponse<Chat | null>> {
+    try {
+      const newChat = await this.chatRepository.createNewChat(
+        senderId,
+        recipientId
+      );
+      return ServiceResponse.success<Chat>("New chat created", newChat);
+    } catch (ex) {
+      const errorMessage = `Error creating new chat: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while creating a new chat.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async findExistingChat(
+    senderId: string,
+    recipientId: string
+  ): Promise<ServiceResponse<Chat | null>> {
+    try {
+      const chat = await this.chatRepository.findExistingChat(
+        senderId,
+        recipientId
+      );
+      if (!chat) {
+        return ServiceResponse.failure(
+          "No existing chat found",
+          null,
+          StatusCodes.OK
+        );
+      }
+      return ServiceResponse.success<Chat>("Existing chat found", chat);
+    } catch (ex) {
+      const errorMessage = `Error finding existing chat: ${
+        (ex as Error).message
+      }`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while finding an existing chat.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async createNewMessage(
+    chatId: string,
+    senderId: string,
+    message: string
+  ): Promise<ServiceResponse<Message | null>> {
+    try {
+      const newMessage = await this.chatRepository.createNewMessage(
+        chatId,
+        senderId,
+        message
+      );
+      return ServiceResponse.success<Message>(
+        "New message created",
+        newMessage
+      );
+    } catch (ex) {
+      const errorMessage = `Error creating new message: ${
+        (ex as Error).message
+      }`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while creating a new message.",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
