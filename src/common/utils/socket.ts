@@ -12,51 +12,84 @@ export const initSockets = (httpServer: http.Server) => {
     },
   });
 
+  // Update the Map to store user info
+  const onlineUsers = new Map<
+    string,
+    { socket: Socket; email: string; role: "ADMIN" | "USER" }
+  >();
+
   const authMiddleware = (
     socket: Socket,
     next: (err?: ExtendedError) => void
   ) => {
     const token = socket.handshake.auth.token;
-    console.log({ token });
 
     if (!token) {
-      next(new Error("no token"));
-      return;
+      return next(new Error("Authentication failed: No token provided"));
     }
 
-    const verifiedJwt = jwt.verify(token, env.JWT_SECRET) as {
+    try {
+      const verifiedJwt = jwt.verify(token, env.JWT_SECRET) as {
+        id: string;
+        email: string;
+        role: "ADMIN" | "USER";
+      };
+
+      if (verifiedJwt.role !== "ADMIN" && verifiedJwt.role !== "USER") {
+        return next(new Error("Authentication failed: Invalid role"));
+      }
+
+      socket.data.user = verifiedJwt;
+      next();
+    } catch (error) {
+      return next(new Error("Authentication failed: Invalid token"));
+    }
+  };
+  io.use(authMiddleware);
+
+  io.on("connection", (socket) => {
+    const user = socket.data.user as {
       id: string;
       email: string;
       role: "ADMIN" | "USER";
     };
-    console.log({ role: verifiedJwt?.role });
-    if (verifiedJwt?.role === "ADMIN" || verifiedJwt?.role === "USER") {
-      next();
-    } else {
-      console.log("next vayena");
-      next(new Error("invalid token"));
-    }
-  };
 
-  io.use(authMiddleware);
-
-  io.on("connection", (socket) => {
     socket.on("register", (data) => {
-      console.log({ data });
+      console.log({ register: user });
+      // Add user to the onlineUsers map
+      onlineUsers.set(user.id, { socket, email: user.email, role: user.role });
+      // Emit updated online users list to all connected clients
+      io.emit(
+        "online_users",
+        Array.from(onlineUsers.entries()).map(([id, { email, role }]) => ({
+          id,
+          email,
+          role,
+        }))
+      );
     });
 
     socket.on("msg_sent_from_admin", (data) => {
-      console.log({ data });
-      io.emit("send_msg_to_user", data);
+      console.log({ msg_sent_from_admin: data });
     });
 
     socket.on("msg_sent_from_user", (data) => {
-      console.log({ data });
-      io.emit("send_msg_to_admin", data);
+      console.log({ msg_sent_from_user: data });
     });
 
     socket.on("disconnect", () => {
       console.log("disconnected");
+      // Remove user from the onlineUsers map
+      onlineUsers.delete(user.id);
+      // Emit updated online users list to all connected clients
+      io.emit(
+        "online_users",
+        Array.from(onlineUsers.entries()).map(([id, { email, role }]) => ({
+          id,
+          email,
+          role,
+        }))
+      );
     });
   });
 
