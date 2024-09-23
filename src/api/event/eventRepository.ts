@@ -30,7 +30,43 @@ export interface UserBooking {
 
 export class eventRepository {
   async findAllAsync() {
-    return await prisma.event.findMany();
+    return await prisma.event.findMany({
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        startDate: true,
+        endDate: true,
+        location: true,
+        status: true,
+        createdAt: true,
+        catering: {
+          select: {
+            name: true,
+          },
+        },
+        accommodation: {
+          select: {
+            name: true,
+          },
+        },
+        theme: {
+          select: {
+            name: true,
+          },
+        },
+        entertainment: {
+          select: {
+            name: true,
+          },
+        },
+        decor: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
   }
 
   async findAllBookings(userId: string): Promise<UserBooking[]> {
