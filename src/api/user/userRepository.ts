@@ -3,7 +3,58 @@ import { User, UserCreatePayload, UserUpdatePayload } from "./userModel";
 
 export class userRepository {
   async findAllAsync() {
-    return await prisma.user.findMany();
+    return await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        name: true,
+        createdAt: true,
+        password: true,
+        events: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            startDate: true,
+            endDate: true,
+            location: true,
+            status: true,
+            createdAt: true,
+            theme: {
+              select: {
+                name: true,
+                id: true,
+              },
+            },
+            catering: {
+              select: {
+                name: true,
+                id: true,
+              },
+            },
+            entertainment: {
+              select: {
+                name: true,
+                id: true,
+              },
+            },
+            decor: {
+              select: {
+                name: true,
+                id: true,
+              },
+            },
+            accommodation: {
+              select: {
+                name: true,
+                id: true,
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   async findByIdAsync(id: string): Promise<User | null> {
