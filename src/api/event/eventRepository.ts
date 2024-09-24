@@ -40,6 +40,13 @@ export class eventRepository {
         location: true,
         status: true,
         createdAt: true,
+        organizer: {
+          select: {
+            name: true,
+            email: true,
+            id: true,
+          },
+        },
         catering: {
           select: {
             name: true,
@@ -82,6 +89,14 @@ export class eventRepository {
         endDate: true,
         location: true,
         status: true,
+        createdAt: true,
+        organizer: {
+          select: {
+            name: true,
+            email: true,
+            id: true,
+          },
+        },
         catering: {
           select: {
             name: true,
